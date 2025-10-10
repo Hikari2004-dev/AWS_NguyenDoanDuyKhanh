@@ -5,111 +5,150 @@ weight: 2
 chapter: false
 pre: " <b> 2. </b> "
 ---
-{{% notice warning %}}
-⚠️ **Note:** The information below is for reference purposes only. Please **do not copy verbatim** for your report, including this warning.
-{{% /notice %}}
 
-In this section, you need to summarize the contents of the workshop that you **plan** to conduct.
-
-# IoT Weather Platform for Lab Research
-## A Unified AWS Serverless Solution for Real-Time Weather Monitoring
+# Cinema Management System
+## React + Spring Boot + AWS Cloud Solution
 
 ### 1. Executive Summary
-The IoT Weather Platform is designed for the ITea Lab team in Ho Chi Minh City to enhance weather data collection and analysis. It supports up to 5 weather stations, with potential scalability to 10-15, utilizing Raspberry Pi edge devices with ESP32 sensors to transmit data via MQTT. The platform leverages AWS Serverless services to deliver real-time monitoring, predictive analytics, and cost efficiency, with access restricted to 5 lab members via Amazon Cognito.
+Building a comprehensive web application for cinema management, including online ticket booking, showtime management, POS system at the counter, and business reporting. The solution uses modern technology (React, Spring Boot, RDS/S3) with optimized costs to suit small and medium cinemas looking to digitize their processes.
 
 ### 2. Problem Statement
-### What’s the Problem?
-Current weather stations require manual data collection, becoming unmanageable with multiple units. There is no centralized system for real-time data or analytics, and third-party platforms are costly and overly complex.
+#### What's the Problem?
+Small and medium-sized cinemas currently still use manual processes for ticket sales, showtime management, and revenue reporting. This causes many problems such as long ticket processing times, difficulty in tracking real-time revenue, and lack of online booking systems to increase revenue.
 
-### The Solution
-The platform uses AWS IoT Core to ingest MQTT data, AWS Lambda and API Gateway for processing, Amazon S3 for storage (including a data lake), and AWS Glue Crawlers and ETL jobs to extract, transform, and load data from the S3 data lake to another S3 bucket for analysis. AWS Amplify with Next.js provides the web interface, and Amazon Cognito ensures secure access. Similar to Thingsboard and CoreIoT, users can register new devices and manage connections, though this platform operates on a smaller scale and is designed for private use. Key features include real-time dashboards, trend analysis, and low operational costs.
+#### The Solution
+The Cinema Management System uses monolithic architecture with React frontend, Spring Boot backend, Amazon RDS MySQL for database, S3 for storage, and Redis for caching. The system supports online ticket booking with real-time seat maps, POS system for staff, VNPay/MoMo payment gateway integration, and reporting dashboard for management. Everything is deployed on AWS with Docker containerization.
 
-### Benefits and Return on Investment
-The solution establishes a foundational resource for lab members to develop a larger IoT platform, serving as a study resource, and provides a data foundation for AI enthusiasts for model training or analysis. It reduces manual reporting for each station via a centralized platform, simplifying management and maintenance, and improves data reliability. Monthly costs are $0.66 USD per the AWS Pricing Calculator, with a 12-month total of $7.92 USD. All IoT equipment costs are covered by the existing weather station setup, eliminating additional development expenses. The break-even period of 6-12 months is achieved through significant time savings from reduced manual work.
-
+#### Benefits and Return on Investment
+The solution helps increase revenue through online ticket sales, reduce ticket processing time at the counter from 5-10 minutes to 1-2 minutes, automate real-time revenue reporting. Operating costs are estimated at ~$15-25/month for dev environment.
 ### 3. Solution Architecture
-The platform employs a serverless AWS architecture to manage data from 5 Raspberry Pi-based stations, scalable to 15. Data is ingested via AWS IoT Core, stored in an S3 data lake, and processed by AWS Glue Crawlers and ETL jobs to transform and load it into another S3 bucket for analysis. Lambda and API Gateway handle additional processing, while Amplify with Next.js hosts the dashboard, secured by Cognito. The architecture is detailed below:
+The system uses monolithic architecture containerized with Docker, deployed on AWS EC2 with Application Load Balancer. React SPA frontend is served via CloudFlare CDN, connecting to Spring Boot backend through REST APIs. Database uses Amazon RDS MySQL for main data, Redis for caching and seat locking, S3 for static assets and backups.
 
-![IoT Weather Station Architecture](/images/2-Proposal/edge_architecture.jpeg)
-
-![IoT Weather Platform Architecture](/images/2-Proposal/platform_architecture.jpeg)
+![Cinema Management System Architecture](/images/2-Proposal/image1.jpeg)
 
 ### AWS Services Used
-- **AWS IoT Core**: Ingests MQTT data from 5 stations, scalable to 15.
-- **AWS Lambda**: Processes data and triggers Glue jobs (two functions).
-- **Amazon API Gateway**: Facilitates web app communication.
-- **Amazon S3**: Stores raw data in a data lake and processed outputs (two buckets).
-- **AWS Glue**: Crawlers catalog data, and ETL jobs transform and load it.
-- **AWS Amplify**: Hosts the Next.js web interface.
-- **Amazon Cognito**: Secures access for lab users.
+- **Amazon EC2**: Host application containers with Docker
+- **Application Load Balancer**: Traffic distribution and SSL termination
+- **Amazon RDS MySQL**: Main database for business data
+- **Amazon S3**: Store static assets, backups and file uploads
+- **CloudFlare CDN**: Cache frontend and reduce bandwidth costs
+- **Amazon SES**: Send email notifications and tickets
+- **Amazon SNS** (optional): Push notifications for mobile
 
 ### Component Design
-- **Edge Devices**: Raspberry Pi collects and filters sensor data, sending it to IoT Core.
-- **Data Ingestion**: AWS IoT Core receives MQTT messages from the edge devices.
-- **Data Storage**: Raw data is stored in an S3 data lake; processed data is stored in another S3 bucket.
-- **Data Processing**: AWS Glue Crawlers catalog the data, and ETL jobs transform it for analysis.
-- **Web Interface**: AWS Amplify hosts a Next.js app for real-time dashboards and analytics.
-- **User Management**: Amazon Cognito manages user access, allowing up to 5 active accounts.
+- **Frontend (React)**: PWA-ready with Tailwind CSS, responsive design support
+- **Backend Application (Spring Boot Monolith)**: 
+  - User Management Module: Authentication and user management
+  - Movie Management Module: Movie and showtime management
+  - Booking Module: Ticket booking logic and seat locking
+  - Payment Module: VNPay/MoMo webhook integration
+  - Notification Module: Email/SMS notifications
+- **Database Design**: MySQL with main tables: users, theaters, screens, movies, showtimes, bookings, payments, tickets
+- **Caching Layer**: Redis for session management and seat reservation locks
 
 ### 4. Technical Implementation
 **Implementation Phases**
-This project has two parts—setting up weather edge stations and building the weather platform—each following 4 phases:
-- Build Theory and Draw Architecture: Research Raspberry Pi setup with ESP32 sensors and design the AWS serverless architecture (1 month pre-internship)
-- Calculate Price and Check Practicality: Use AWS Pricing Calculator to estimate costs and adjust if needed (Month 1).
-- Fix Architecture for Cost or Solution Fit: Tweak the design (e.g., optimize Lambda with Next.js) to stay cost-effective and usable (Month 2).
-- Develop, Test, and Deploy: Code the Raspberry Pi setup, AWS services with CDK/SDK, and Next.js app, then test and release to production (Months 2-3).
+The project is divided into 3 main phases over 3 months:
+
+**Phase 1: MVP Core (Month 1)**
+- Week 1-2: Repository structure, CI/CD pipeline, database schema, skeleton Spring Boot
+- Week 3: Core APIs (authentication, movies, showtimes, basic booking)
+- Week 4: Basic React frontend (movie listing, seat selection)
+
+**Phase 2: Feature Complete (Month 2)**
+- Week 1: Complete booking flow and payment integration
+- Week 2: QR code generation, POS staff tools
+- Week 3: Mobile QR scanner, webhook handling
+- Week 4: Basic dashboard, alpha testing
+
+**Phase 3: Production & Polish (Month 3)**
+- Week 1-2: Load testing, security audit, performance optimization
+- Week 3: Bug fixes, UI/UX improvements
+- Week 4: Production deployment, monitoring setup
 
 **Technical Requirements**
-- Weather Edge Station: Sensors (temperature, humidity, rainfall, wind speed), a microcontroller (ESP32), and a Raspberry Pi as the edge device. Raspberry Pi runs Raspbian, handles Docker for filtering, and sends 1 MB/day per station via MQTT over Wi-Fi.
-- Weather Platform: Practical knowledge of AWS Amplify (hosting Next.js), Lambda (minimal use due to Next.js), AWS Glue (ETL), S3 (two buckets), IoT Core (gateway and rules), and Cognito (5 users). Use AWS CDK/SDK to code interactions (e.g., IoT Core rules to S3). Next.js reduces Lambda workload for the fullstack web app.
+- **Frontend Stack**: React 18, Tailwind CSS.
+- **Backend Stack**: Spring Boot 3, Java 17, Spring Security, JPA/Hibernate, Maven
+- **Database**: MySQL 8.0 with connection pooling and read replicas
+- **Infrastructure**: Docker containers, AWS EC2, Application Load Balancer
+- **Monitoring**: CloudWatch logs, application metrics, uptime monitoring
 
 ### 5. Timeline & Milestones
 **Project Timeline**
-- Pre-Internship (Month 0): 1 month for planning and old station review.
-- Internship (Months 1-3): 3 months.
-    - Month 1: Study AWS and upgrade hardware.
-    - Month 2: Design and adjust architecture.
-    - Month 3: Implement, test, and launch.
-- Post-Launch: Up to 1 year for research.
+- **Pre-Development (Month 0)**: Requirements gathering, architecture design, technology selection
+- **Phase 1 - MVP (Month 1)**: Core functionality development
+  - Milestone 1: Backend APIs and database (Week 3)
+  - Milestone 2: Frontend booking flow (Week 4)
+- **Phase 2 - Feature Complete (Month 2)**: Complete features and integrations
+  - Milestone 3: Payment integration (Week 1)
+  - Milestone 4: Staff tools and testing (Week 4)
+- **Phase 3 - Production (Month 3)**: Optimization and deployment
+
+**Key Deliverables**
+- Functional MVP with online booking system
+- Staff POS system with QR code scanning
+- Management dashboard with real-time analytics
+- Mobile-responsive web application
+- Production deployment with monitoring
 
 ### 6. Budget Estimation
-You can find the budget estimation on the [AWS Pricing Calculator](https://calculator.aws/#/estimate?id=621f38b12a1ef026842ba2ddfe46ff936ed4ab01).  
-Or you can download the [Budget Estimation File](../attachments/budget_estimation.pdf).
+Cost estimation optimized for startup and SMB requirements:
 
-### Infrastructure Costs
-- AWS Services:
-    - AWS Lambda: $0.00/month (1,000 requests, 512 MB storage).
-    - S3 Standard: $0.15/month (6 GB, 2,100 requests, 1 GB scanned).
-    - Data Transfer: $0.02/month (1 GB inbound, 1 GB outbound).
-    - AWS Amplify: $0.35/month (256 MB, 500 ms requests).
-    - Amazon API Gateway: $0.01/month (2,000 requests).
-    - AWS Glue ETL Jobs: $0.02/month (2 DPUs).
-    - AWS Glue Crawlers: $0.07/month (1 crawler).
-    - MQTT (IoT Core): $0.08/month (5 devices, 45,000 messages).
+**Infrastructure Costs (Monthly)**
+- **Amazon EC2**: 
+  - Development: t3.micro ($8.50/month)
+  - Production: t3.small ($16.50/month)
+- **Amazon RDS MySQL**: t3.micro ($13.50/month)
+- **Application Load Balancer**: $16.20/month
+- **Amazon S3**: $5-10/month (depending on usage)
+- **CloudFlare**: $0/month (free tier)
+- **Domain & SSL**: $15/year
 
-Total: $0.7/month, $8.40/12 months
+**Development Environment**: ~$15-25/month
+**Production Environment**: ~$50-70/month
 
-- Hardware: $265 one-time (Raspberry Pi 5 and sensors).
+**One-time Development Costs**
+- Development time: 3 months (Phase 1-3)
+- Third-party integrations: VNPay/MoMo setup fees
+- Domain registration and SSL certificates
+
 
 ### 7. Risk Assessment
 #### Risk Matrix
-- Network Outages: Medium impact, medium probability.
-- Sensor Failures: High impact, low probability.
-- Cost Overruns: Medium impact, low probability.
+- **Race Conditions (Seat Booking)**: High impact, medium probability
+- **Payment Integration Issues**: High impact, medium probability  
+- **Performance Bottlenecks**: Medium impact, medium probability
+- **Security Vulnerabilities**: High impact, low probability
+- **Cost Overruns**: Medium impact, low probability
 
 #### Mitigation Strategies
-- Network: Local storage on Raspberry Pi with Docker.
-- Sensors: Regular checks and spares.
-- Cost: AWS budget alerts and optimization.
+- **Race Conditions**: Database locks, optimistic locking, Redis distributed locks for seat reservations
+- **Payment Issues**: Sandbox testing early, webhook retry logic, transaction logging
+- **Performance**: Database indexing, Redis caching, connection pooling, load testing
+- **Security**: Spring Security, input validation, SQL injection prevention, regular security audits
+- **Cost Control**: AWS budget alerts, resource monitoring, auto-scaling policies
 
 #### Contingency Plans
-- Revert to manual methods if AWS fails.
-- Use CloudFormation for cost-related rollbacks.
+- **Payment Gateway Backup**: Integrate multiple payment providers
+- **Database Failover**: RDS Multi-AZ deployment for production
+- **Application Scaling**: Auto-scaling groups and load balancer health checks
+- **Disaster Recovery**: Automated backups, infrastructure as code with Terraform
 
 ### 8. Expected Outcomes
-#### Technical Improvements: 
-Real-time data and analytics replace manual processes.  
-Scalable to 10-15 stations.
+#### Technical Improvements
+- **Uptime Target**: >99.5% availability
+- **Performance**: <500ms response time (95th percentile)
+- **Error Rate**: <0.1% for payment transactions
+- **Scalability**: Support 1000+ concurrent users per cinema
+
+#### Business Value
+- **Revenue Growth**: 15-25% increase from online bookings
+- **Operational Efficiency**: 50% reduction in ticket processing time
+- **Customer Experience**: Self-service booking, mobile-friendly interface
+- **Data Insights**: Real-time dashboard for business intelligence
+
 #### Long-term Value
-1-year data foundation for AI research.  
-Reusable for future projects.
+- **Market Expansion**: Template for franchise cinemas
+- **Technology Foundation**: Monolithic architecture with modular design for future scalability
+- **Competitive Advantage**: Modern tech stack and customer experience
+- **Revenue Streams**: SaaS model with monthly subscriptions per cinema
