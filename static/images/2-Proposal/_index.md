@@ -24,7 +24,7 @@ The solution helps increase revenue through online ticket sales, reduce ticket p
 ### 3. Solution Architecture
 The system uses monolithic architecture containerized with Docker, deployed on AWS EC2 with Application Load Balancer. React SPA frontend is served via CloudFlare CDN, connecting to Spring Boot backend through REST APIs. Database uses Amazon RDS MySQL for main data, Redis for caching and seat locking, S3 for static assets and backups.
 
-![Cinema Management System Architecture](/images/2-Proposal/image1.jpg)
+![Cinema Management System Architecture](/images/2-Proposal/image1.jpeg)
 
 ### AWS Services Used
 - **Amazon EC2**: Host application containers with Docker

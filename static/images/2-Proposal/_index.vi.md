@@ -25,8 +25,7 @@ Giải pháp giúp tăng doanh thu thông qua bán vé trực tuyến, giảm th
 ### 3. Kiến trúc Giải pháp
 Hệ thống sử dụng kiến trúc monolithic được containerized với Docker, triển khai trên AWS EC2 với Application Load Balancer. Frontend React SPA được phục vụ qua CloudFlare CDN, kết nối với backend Spring Boot thông qua REST APIs. Cơ sở dữ liệu sử dụng Amazon RDS MySQL cho dữ liệu chính, Redis cho bộ nhớ đệm và khóa ghế, S3 cho tài sản tĩnh và sao lưu.
 
-![Cinema Management System Architecture](/images/2-Proposal/image1.jpg)
-
+![Cinema Management System Architecture](/images/2-Proposal/image1.jpeg)
 
 ### Các Dịch vụ AWS Sử dụng
 - **Amazon EC2**: Lưu trữ các container ứng dụng với Docker
