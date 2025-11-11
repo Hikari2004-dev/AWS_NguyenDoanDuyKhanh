@@ -7,15 +7,15 @@ chapter: false
 
 # Báo cáo thực tập
 ### Thông tin sinh viên:
-&emsp; **Họ và tên:** Nguyễn Văn A
+&emsp; **Họ và tên:** Nguyễn Đoàn Duy Khánh
 
-&emsp; **Số điện thoại:** 0989888999
+&emsp; **Số điện thoại:** 0915232119
 
-&emsp; **Email:** Anguyenvan@gmail.com
+&emsp; **Email:** khanhnddse180178@fpt.edu.vn
 
-&emsp; **Trường:** Đại học Sư phạm Kỹ thuật TP.HCM
+&emsp; **Trường:** Đại học FPT
 
-&emsp; **Ngành:** Công nghệ thông tin
+&emsp; **Ngành:** Kỹ Thuật Phần Mềm
 
 &emsp; **Lớp:** AWS082025
 
@@ -25,7 +25,7 @@ chapter: false
 
 &emsp; **Thời gian thực tập:** Từ ngày 12/08/2025 đến ngày 12/11/2025
 
-![Ảnh đại diện của bạn](/images/avatar.png)
+![Your profile picture](/images/IMG_0268.png)
 
 
 

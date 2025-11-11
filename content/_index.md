@@ -17,7 +17,7 @@ chapter: false
 
 &emsp; **Phone Number:** 0915232119 
 
-&emsp; **Email:** khanhkhoi08@gmail.com
+&emsp; **Email:** khanhnddse180178@fpt.edu.vn
 
 &emsp; **University:** FPT University
 
