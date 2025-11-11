@@ -23,17 +23,38 @@ Hệ thống Quản lý Rạp Chiếu phim sử dụng kiến trúc monolithic v
 Giải pháp giúp tăng doanh thu thông qua bán vé trực tuyến, giảm thời gian xử lý vé tại quầy từ 5-10 phút xuống 1-2 phút, tự động hóa báo cáo doanh thu thời gian thực. Chi phí vận hành ước tính ~$15-25/tháng cho môi trường dev.
 
 ### 3. Kiến trúc Giải pháp
-Hệ thống sử dụng kiến trúc monolithic được containerized với Docker, triển khai trên AWS EC2 với Application Load Balancer. Frontend React SPA được phục vụ qua CloudFlare CDN, kết nối với backend Spring Boot thông qua REST APIs. Cơ sở dữ liệu sử dụng Amazon RDS MySQL cho dữ liệu chính, Redis cho bộ nhớ đệm và khóa ghế, S3 cho tài sản tĩnh và sao lưu.
+Hệ thống sử dụng kiến trúc monolithic được containerized với Docker, triển khai trên AWS EC2 với Application Load Balancer. Frontend React SPA được phục vụ qua CloudFront CDN, kết nối với backend Spring Boot thông qua REST APIs. Cơ sở dữ liệu sử dụng Amazon RDS MySQL cho dữ liệu chính, Redis cho bộ nhớ đệm và khóa ghế, S3 cho tài sản tĩnh và sao lưu.
 
 ![Cinema Management System Architecture](/images/2-Proposal/image1.jpg)
-
+| Bước | Nguồn → Đích | Mô tả |
+|---:|---|---|
+| 1 | User → Route 53 | Người dùng thực hiện truy vấn DNS để tìm địa chỉ IP của ứng dụng. |
+| 2 | Route 53 → CloudFront | Route 53 chuyển hướng yêu cầu đến CDN (CloudFront). |
+| 3 | CloudFront → Application Load Balancer (ALB) | CloudFront chuyển tiếp yêu cầu động/API đến ALB trong VPC. |
+| 4 | CloudFront → Amazon S3 | CloudFront phân phát nội dung tĩnh (ảnh, tài nguyên) trực tiếp từ S3 (Origin). |
+| 5 | User / CloudFront → Amazon Cognito | Luồng xác thực, đăng nhập và quản lý danh tính người dùng. |
+| 6 | ALB → Amazon EC2 | ALB phân phối lưu lượng đến các instance EC2 (Private Subnet). |
+| 7 | EC2 → Amazon RDS | Ứng dụng EC2 truy vấn cơ sở dữ liệu quan hệ (dữ liệu chính). |
+| 8 | EC2 → Amazon ElastiCache | Ứng dụng EC2 truy vấn cache tốc độ cao để giảm tải cho DB. |
+| 9 | EC2 (Private Subnet) → NAT Gateway | EC2 sử dụng NAT Gateway làm cổng an toàn để truy cập Internet bên ngoài. |
+| 10 | NAT Gateway → Internet Gateway | NAT Gateway chuyển tiếp lưu lượng ra khỏi VPC tới Internet Gateway. |
+| 11 | EC2 / Dịch vụ khác → Amazon SNS | Ứng dụng gửi thông báo/sự kiện đến một chủ đề SNS. |
+| 12 | SNS → AWS Lambda | Thông báo từ SNS kích hoạt hàm Lambda để xử lý tác vụ không đồng bộ. |
+| 13 | Lambda / Dịch vụ khác → Amazon SES | Lambda hoặc dịch vụ khác sử dụng SES để gửi email giao dịch/thông báo. |
+| 14 | Amazon S3 → AWS Lambda | Sự kiện tải lên/thay đổi file trên S3 kích hoạt Lambda để xử lý file. |
+| 15 | Các dịch vụ trong VPC → Amazon CloudWatch | Ghi log và metric về hiệu suất, lỗi để giám sát (CloudWatch). |
+| 16 | Dev → GitHub | Nhà phát triển đẩy mã nguồn lên kho GitHub. |
+| 17 | GitHub → AWS CodePipeline | CodePipeline bắt đầu pipeline CI/CD khi có thay đổi mã nguồn. |
+| 18 | CodePipeline → AWS CodeBuild | CodeBuild thực hiện build, chạy kiểm thử và tạo artifact. |
+| 19 | CodePipeline → AWS CloudFormation | CodePipeline kích hoạt CloudFormation để triển khai/cập nhật IaC. |
+| 20 | CloudFormation → Các dịch vụ AWS | CloudFormation tạo/cập nhật/xóa các tài nguyên AWS theo template. |
 
 ### Các Dịch vụ AWS Sử dụng
 - **Amazon EC2**: Lưu trữ các container ứng dụng với Docker
 - **Application Load Balancer**: Phân phối lưu lượng và kết thúc SSL
 - **Amazon RDS MySQL**: Cơ sở dữ liệu chính cho dữ liệu kinh doanh
 - **Amazon S3**: Lưu trữ tài sản tĩnh, sao lưu và tải lên tệp
-- **CloudFlare CDN**: Cache frontend và giảm chi phí băng thông
+- **CloudFront CDN**: Cache frontend và giảm chi phí băng thông
 - **Amazon SES**: Gửi thông báo email và vé
 - **Amazon SNS** (tùy chọn): Thông báo đẩy cho mobile
 
@@ -70,7 +91,7 @@ Dự án được chia thành 3 giai đoạn chính trong 3 tháng:
 
 **Yêu cầu Kỹ thuật**
 - **Frontend Stack**: React 18, Tailwind CSS.
-- **Backend Stack**: Spring Boot 3, Java 17, Spring Security, JPA/Hibernate, Maven
+- **Backend Stack**: Spring Boot 3, Java 21, Spring Security, JPA/Hibernate, Maven
 - **Cơ sở dữ liệu**: MySQL 8.0 với connection pooling và read replicas
 - **Hạ tầng**: Docker containers, AWS EC2, Application Load Balancer
 - **Giám sát**: CloudWatch logs, application metrics, uptime monitoring
@@ -103,7 +124,7 @@ Dự án được chia thành 3 giai đoạn chính trong 3 tháng:
 - **Amazon RDS MySQL**: t3.micro ($13.50/tháng)
 - **Application Load Balancer**: $16.20/tháng
 - **Amazon S3**: $5-10/tháng (tùy thuộc vào sử dụng)
-- **CloudFlare**: $0/tháng (gói miễn phí)
+- **CloudFront**: $0/tháng (gói miễn phí)
 - **Domain & SSL**: $15/năm
 
 **Môi trường Development**: ~$15-25/tháng

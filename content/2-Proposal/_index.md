@@ -22,18 +22,44 @@ The Cinema Management System uses monolithic architecture with React frontend, S
 #### Benefits and Return on Investment
 The solution helps increase revenue through online ticket sales, reduce ticket processing time at the counter from 5-10 minutes to 1-2 minutes, automate real-time revenue reporting. Operating costs are estimated at ~$15-25/month for dev environment.
 ### 3. Solution Architecture
-The system uses monolithic architecture containerized with Docker, deployed on AWS EC2 with Application Load Balancer. React SPA frontend is served via CloudFlare CDN, connecting to Spring Boot backend through REST APIs. Database uses Amazon RDS MySQL for main data, Redis for caching and seat locking, S3 for static assets and backups.
+The system uses monolithic architecture containerized with Docker, deployed on AWS EC2 with Application Load Balancer. React SPA frontend is served via CloudFront CDN, connecting to Spring Boot backend through REST APIs. Database uses Amazon RDS MySQL for main data, Redis for caching and seat locking, S3 for static assets and backups.
 
 ![Cinema Management System Architecture](/images/2-Proposal/image1.jpg)
+### Data Flow (AWS Data Flow)
+
+| Step | Source → Destination | Description |
+|---:|---|---|
+| 1 | User → Route 53 | The user issues a DNS query to resolve the application's address. |
+| 2 | Route 53 → CloudFront | Route 53 directs the request to the CDN (CloudFront). |
+| 3 | CloudFront → Application Load Balancer (ALB) | CloudFront forwards dynamic/API requests to the ALB inside the VPC. |
+| 4 | CloudFront → Amazon S3 | CloudFront serves static assets (images, resources) directly from S3 (origin). |
+| 5 | User / CloudFront → Amazon Cognito | Authentication flow: user sign-in and identity management. |
+| 6 | ALB → Amazon EC2 | ALB distributes traffic to EC2 instances (private subnets). |
+| 7 | EC2 → Amazon RDS | The application on EC2 queries the relational database (primary data). |
+| 8 | EC2 → Amazon ElastiCache | The application queries a high-speed cache to offload the database. |
+| 9 | EC2 (Private Subnet) → NAT Gateway | EC2 uses the NAT Gateway as a secure egress to access the Internet. |
+| 10 | NAT Gateway → Internet Gateway | The NAT Gateway forwards outbound traffic to the Internet Gateway. |
+| 11 | EC2 / Other services → Amazon SNS | The application sends notifications/events to an SNS topic. |
+| 12 | SNS → AWS Lambda | SNS notifications trigger Lambda functions for asynchronous processing. |
+| 13 | Lambda / Other services → Amazon SES | Lambda or other services use SES to send transactional emails/notifications. |
+| 14 | Amazon S3 → AWS Lambda | S3 object create/modify events trigger Lambda for file processing. |
+| 15 | Services in the VPC → Amazon CloudWatch | Services publish logs and metrics for performance and error monitoring. |
+| 16 | Dev → GitHub | Developers push source code to the GitHub repository. |
+| 17 | GitHub → AWS CodePipeline | CodePipeline is triggered by changes in GitHub to start CI/CD. |
+| 18 | CodePipeline → AWS CodeBuild | CodeBuild performs compiling, testing, and produces artifacts. |
+| 19 | CodePipeline → AWS CloudFormation | CodePipeline invokes CloudFormation to deploy/update infrastructure as code. |
+| 20 | CloudFormation → AWS Services | CloudFormation creates/updates/deletes AWS resources according to templates. |
+
 
 ### AWS Services Used
 - **Amazon EC2**: Host application containers with Docker
 - **Application Load Balancer**: Traffic distribution and SSL termination
 - **Amazon RDS MySQL**: Main database for business data
 - **Amazon S3**: Store static assets, backups and file uploads
-- **CloudFlare CDN**: Cache frontend and reduce bandwidth costs
+- **CloudFront CDN**: Cache frontend and reduce bandwidth costs
 - **Amazon SES**: Send email notifications and tickets
 - **Amazon SNS** (optional): Push notifications for mobile
+
 
 ### Component Design
 - **Frontend (React)**: PWA-ready with Tailwind CSS, responsive design support
@@ -68,7 +94,7 @@ The project is divided into 3 main phases over 3 months:
 
 **Technical Requirements**
 - **Frontend Stack**: React 18, Tailwind CSS.
-- **Backend Stack**: Spring Boot 3, Java 17, Spring Security, JPA/Hibernate, Maven
+- **Backend Stack**: Spring Boot 3, Java 21, Spring Security, JPA/Hibernate, Maven
 - **Database**: MySQL 8.0 with connection pooling and read replicas
 - **Infrastructure**: Docker containers, AWS EC2, Application Load Balancer
 - **Monitoring**: CloudWatch logs, application metrics, uptime monitoring
@@ -98,10 +124,10 @@ Cost estimation optimized for startup and SMB requirements:
 - **Amazon EC2**: 
   - Development: t3.micro ($8.50/month)
   - Production: t3.small ($16.50/month)
-- **Amazon RDS MySQL**: t3.micro ($13.50/month)
+- **Amazon RDS MySQL**: t3.micro ($13.14/month)
 - **Application Load Balancer**: $16.20/month
 - **Amazon S3**: $5-10/month (depending on usage)
-- **CloudFlare**: $0/month (free tier)
+- **CloudFront**: $0/month (free tier)
 - **Domain & SSL**: $15/year
 
 **Development Environment**: ~$15-25/month
